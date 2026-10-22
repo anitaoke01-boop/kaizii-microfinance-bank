@@ -1,0 +1,80 @@
+Portfolio 2: Query Results Summary (Q00 - Q09)
+Database: Kaizii_MFB (PostgreSQL)
+
+================================================================================
+Q00: Find Test Values
+================================================================================
+Observed result: 1 row returned
+- account_number: P2-ACC-0000000001
+- customer_email: p2seed-customer-00001@example.invalid
+- idempotency_key: P2SEED-XFER-00025000
+
+================================================================================
+Q01: Account Statement (q01_account_statement.sql)
+================================================================================
+Target Account: P2-ACC-0000000001
+Observed result: 50 rows returned (LIMIT 50)
+- Most recent 50 ledger entries for wallet P2-ACC-0000000001.
+
+================================================================================
+Q02: Daily Transfer Totals (q02_daily_transfer_totals.sql)
+================================================================================
+Window: Last 30 days
+Currency: NGN
+Observed result: 31 rows returned (1 row per calendar day)
+- Daily completed transfer count and total transfer volume.
+
+================================================================================
+Q03: Customer Largest Transfers (q03_customer_largest_transfers.sql)
+================================================================================
+Target Customer: p2seed-customer-00001@example.invalid
+Currency: NGN
+Observed result: 10 rows returned (top 10 largest debited transfers)
+- Ranked separately by currency partition.
+
+================================================================================
+Q04: Large Transfers for Review (q04_large_transfer_fraud.sql)
+================================================================================
+Threshold: >= 4,000 NGN in last 90 days
+Currency: NGN
+Observed result: 10 rows returned (LIMIT 10)
+- Top 10 customer accounts flagged by outgoing high-value volume for compliance review.
+
+================================================================================
+Q05: Idempotency Key Lookup (q05_idempotency_lookup.sql)
+================================================================================
+Lookup Key: P2SEED-XFER-00025000
+Observed result: 1 row returned
+- Single unique transaction record retrieved.
+
+================================================================================
+Q06: Balance Reconciliation (q06_balance_reconciliation.sql)
+================================================================================
+Assumed Opening Balance: 53,000.00 NGN
+Observed result: 0 rows returned
+- Reconciliation check: 0 discrepancies across all 5,000 accounts.
+- Cached accounts.balance strictly equals opening balance + net ledger movement.
+
+================================================================================
+Q07: Unbalanced Journals Audit (q07_unbalanced_journals.sql)
+================================================================================
+Observed result: 0 rows returned
+- Journal audit: 0 unbalanced transactions.
+- Every completed and reversed transaction has balanced debits and credits in matching currencies.
+
+================================================================================
+Q08: Net Movement Including Reversals (q08_net_movement_reversals.sql)
+================================================================================
+Currency: NGN
+Observed result: 1 row returned
+- Summary row reporting completed transfers, reversed transfers, linked reversals, and net movement.
+
+================================================================================
+Q09: Join Fan-Out Trap (q09_join_fanout_trap.sql)
+================================================================================
+Currency: NGN
+Observed result: 1 row returned
+- Correct Total: Actual sum of completed transfer amounts
+- Fan-Out Total: Sum after joining transactions with ledger entries (2x inflated)
+- Observed Fan-Out Ratio: 2.0
+- Joined Ledger Rows: Exactly 2 x transfer_count (1 debit + 1 credit per transfer)
